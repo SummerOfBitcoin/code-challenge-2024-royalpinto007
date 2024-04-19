@@ -17,10 +17,10 @@ function readMempool() {
 
 // scriptPubKey hex to address
 function convertScriptPubKeyToAddress(scriptPubKeyHex) {
-    const publicKey = Buffer.from(scriptPubKeyHex, "hex");
-    const base58Address = generateBase58Address(publicKey);
-    const bech32Address = encodeBech32(publicKey);
-    return { base58Address, bech32Address };
+  const publicKey = Buffer.from(scriptPubKeyHex, "hex");
+  const base58Address = generateBase58Address(publicKey);
+  const bech32Address = encodeBech32(publicKey);
+  return { base58Address, bech32Address };
 }
 
 // generate base58 address from public key
