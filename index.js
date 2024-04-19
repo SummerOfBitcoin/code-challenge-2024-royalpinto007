@@ -43,51 +43,6 @@ function generateBase58Address(publicKey) {
   return base58Address;
 }
 
-// // Function to convert scriptPubKey hex to address
-// function convertScriptPubKeyToAddress(scriptPubKeyHex) {
-//  const publicKey = Buffer.from(scriptPubKeyHex, "hex");
-
-//  // Function to generate base58 address from public key
-//  function generateBase58Address(publicKey) {
-//    const hash = crypto.createHash("sha256").update(publicKey).digest();
-//    const ripemd160 = crypto.createHash("ripemd160").update(hash).digest();
-//    const pubKeyHashWithVersion = Buffer.concat([
-//      Buffer.from([0x00]),
-//      ripemd160,
-//    ]);
-//    const addressChecksum = crypto
-//      .createHash("sha256")
-//      .update(pubKeyHashWithVersion)
-//      .digest();
-//    const addressChecksum2 = crypto
-//      .createHash("sha256")
-//      .update(addressChecksum)
-//      .digest()
-//      .slice(0, 4);
-//    const base58Address = base58encode(
-//      Buffer.concat([pubKeyHashWithVersion, addressChecksum2])
-//    );
-//    return base58Address;
-//  }
-
-//  // Function to encode bytes to base58
-//  function base58encode(bytes) {
-//    const alphabet =
-//      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-//    let bigInt = BigInt("0x" + bytes.toString("hex"));
-//    let encoded = "";
-//    while (bigInt > 0n) {
-//      const remainder = bigInt % 58n;
-//      bigInt = bigInt / 58n;
-//      encoded = alphabet[Number(remainder)] + encoded;
-//    }
-//    for (const byte of bytes) {
-//      if (byte !== 0) break;
-//      encoded = "1" + encoded;
-//    }
-//    return encoded;
-//  }
-
 // encode bytes to bech32
 function encodeBech32(bytes) {
   const alphabet = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
@@ -106,13 +61,6 @@ function encodeBech32(bytes) {
   return result;
 }
 
-//  // Generate base58 and bech32 addresses
-//  const base58Address = generateBase58Address(publicKey);
-//  const bech32Address = encodeBech32(publicKey);
-
-//  return { base58Address, bech32Address };
-// }
-
 // 1. ASM to ScriptPub Conversion and Address Check
 function validateAddress(transaction) {
   const { scriptPubKeyHex, expectedAddress } = transaction;
@@ -121,13 +69,6 @@ function validateAddress(transaction) {
 
   return expectedAddress === base58Address || expectedAddress === bech32Address;
 }
-
-// const transaction = {
-//     scriptPubKeyHex: "6085312a9c500ff9cc35b571b0a1e5efb7fb9f16",
-//     expectedAddress: "13VAhE9YkDwvMdRB85fm3y3xzLWq8ZcUfJ"
-// };
-
-// console.log(validateAddress(transaction));
 
 // 2. Remove Dust Transactions and Double Spending
 function removeDustAndDoubleSpending(transactions) {
@@ -313,6 +254,7 @@ class BlockHeader {
     this.bits.writeUInt32LE(0x1d00ffff, 0); // difficulty target
     this.nonce = Buffer.alloc(4); // nonce 4 bytes
     this.nonce.writeUInt32LE(nonce, 0);
+    this.difficultyTarget = 0x1d00ffff; 
   }
 
   serialize() {
@@ -459,3 +401,65 @@ function writeOutputToFile(data) {
 
 // Mine the block with transactions
 mineBlock(transactions);
+
+
+// // Function to convert scriptPubKey hex to address
+// function convertScriptPubKeyToAddress(scriptPubKeyHex) {
+//  const publicKey = Buffer.from(scriptPubKeyHex, "hex");
+
+//  // Function to generate base58 address from public key
+//  function generateBase58Address(publicKey) {
+//    const hash = crypto.createHash("sha256").update(publicKey).digest();
+//    const ripemd160 = crypto.createHash("ripemd160").update(hash).digest();
+//    const pubKeyHashWithVersion = Buffer.concat([
+//      Buffer.from([0x00]),
+//      ripemd160,
+//    ]);
+//    const addressChecksum = crypto
+//      .createHash("sha256")
+//      .update(pubKeyHashWithVersion)
+//      .digest();
+//    const addressChecksum2 = crypto
+//      .createHash("sha256")
+//      .update(addressChecksum)
+//      .digest()
+//      .slice(0, 4);
+//    const base58Address = base58encode(
+//      Buffer.concat([pubKeyHashWithVersion, addressChecksum2])
+//    );
+//    return base58Address;
+//  }
+
+//  // Function to encode bytes to base58
+//  function base58encode(bytes) {
+//    const alphabet =
+//      "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+//    let bigInt = BigInt("0x" + bytes.toString("hex"));
+//    let encoded = "";
+//    while (bigInt > 0n) {
+//      const remainder = bigInt % 58n;
+//      bigInt = bigInt / 58n;
+//      encoded = alphabet[Number(remainder)] + encoded;
+//    }
+//    for (const byte of bytes) {
+//      if (byte !== 0) break;
+//      encoded = "1" + encoded;
+//    }
+//    return encoded;
+//  }
+
+
+// const transaction = {
+//     scriptPubKeyHex: "6085312a9c500ff9cc35b571b0a1e5efb7fb9f16",
+//     expectedAddress: "13VAhE9YkDwvMdRB85fm3y3xzLWq8ZcUfJ"
+// };
+
+// console.log(validateAddress(transaction));
+
+
+//  // Generate base58 and bech32 addresses
+//  const base58Address = generateBase58Address(publicKey);
+//  const bech32Address = encodeBech32(publicKey);
+
+//  return { base58Address, bech32Address };
+// }
