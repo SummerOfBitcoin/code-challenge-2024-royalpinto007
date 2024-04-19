@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const secp256k1 = require('secp256k1');
 const bs58 = require('bs58');
 
-// Function to read JSON files from the mempool folder
+// read JSON files from the mempool folder
 function readMempool() {
  const mempoolFiles = fs.readdirSync("./mempool");
  const transactions = [];
@@ -15,7 +15,7 @@ function readMempool() {
  return transactions;
 }
 
-// Function to convert scriptPubKey hex to address
+// scriptPubKey hex to address
 function convertScriptPubKeyToAddress(scriptPubKeyHex) {
     const publicKey = Buffer.from(scriptPubKeyHex, "hex");
     const base58Address = generateBase58Address(publicKey);
@@ -23,7 +23,7 @@ function convertScriptPubKeyToAddress(scriptPubKeyHex) {
     return { base58Address, bech32Address };
 }
 
-// Function to generate base58 address from public key
+// generate base58 address from public key
 function generateBase58Address(publicKey) {
     const hash = crypto.createHash("sha256").update(publicKey).digest();
     const ripemd160 = crypto.createHash("ripemd160").update(hash).digest();
@@ -95,7 +95,7 @@ function generateBase58Address(publicKey) {
 //  }
 
 
- // Function to encode bytes to bech32
+ // encode bytes to bech32
  function encodeBech32(bytes) {
    const alphabet = "qpzry9x8gf2tvdw0s3jn54khce6mua7l";
    let value = 0;
@@ -239,7 +239,7 @@ function validateRedeemScripts(transaction) {
 }
 
 
-// Function to validate witnesses
+// validate witnesses
 function validateWitnesses(transaction) {
  // Check if witnesses are present in the transaction
  if (!transaction.witness) {
@@ -308,7 +308,7 @@ function extractSignatures(transaction) {
 }
 
 
-// Function to perform ECDSA signature verification
+// perform ECDSA signature verification
 function verifySignatures(transaction, signatures) {
    // Iterate over inputs and perform signature verification
    for (let i = 0; i < transaction.vin.length; i++) {
@@ -340,25 +340,37 @@ function verifySignatures(transaction, signatures) {
 
 // Block Header
 class BlockHeader {
-    constructor(prevBlockHash, merkleRoot, timestamp, nonce) {
-        this.prevBlockHash = prevBlockHash;
-        this.merkleRoot = merkleRoot;
-        this.timestamp = timestamp;
-        this.nonce = nonce;
-        this.difficultyTarget = '0000ffff00000000000000000000000000000000000000000000000000000000';
-    }
+  constructor(prevBlockHash, merkleRoot, timestamp, nonce) {
+      this.version = Buffer.from([0x00, 0x00, 0x00, 0x00]); // version 4 bytes
+      this.prevBlockHash = Buffer.from(prevBlockHash, 'hex'); // previous block 32 bytes
+      this.merkleRoot = Buffer.from(merkleRoot, 'hex'); // merkle root 32 bytes
+      this.timestamp = Buffer.alloc(4); // time 4 bytes
+      this.timestamp.writeUInt32LE(timestamp, 0);
+      this.bits = Buffer.alloc(4); // bits 4 bytes
+      this.bits.writeUInt32LE(0x1d00ffff, 0); // difficulty target
+      this.nonce = Buffer.alloc(4); // nonce 4 bytes
+      this.nonce.writeUInt32LE(nonce, 0);
+  }
 
-    serialize() {
-        return `${this.prevBlockHash}${this.merkleRoot}${this.timestamp}${this.nonce}${this.difficultyTarget}`;
-    }
+  serialize() {
+      return Buffer.concat([
+          this.version,
+          this.prevBlockHash,
+          this.merkleRoot,
+          this.timestamp,
+          this.bits,
+          this.nonce
+      ]).toString('hex');
+  }
 
-    hash() {
-        const header = this.serialize();
-        return crypto.createHash('sha256').update(header).digest('hex');
-    }
+  hash() {
+      const header = this.serialize();
+      return crypto.createHash('sha256').update(header, 'hex').digest('hex');
+  }
 }
 
-// Coinbase Transaction
+
+// Coinbase Transaction (needs to be corrected)
 class CoinbaseTransaction {
     constructor(coinbaseData, recipientAddress) {
         this.coinbaseData = coinbaseData;
@@ -370,7 +382,7 @@ class CoinbaseTransaction {
     }
 }
 
-// Function to mine a block
+// mine a block
 function mineBlock(transactions) {
   const coinbaseTransaction = new CoinbaseTransaction('Coinbase data', 'Recipient address');
   const coinbaseTxId = crypto.createHash('sha256').update(coinbaseTransaction.serialize()).digest('hex');
@@ -401,7 +413,7 @@ function mineBlock(transactions) {
   writeOutputToFile(outputData);
 }
 
-// Function to validate all transactions
+// validate all transactions
 function validateTransactions(transactions) {
   for (const transaction of transactions) {
       if (!validateAddress(transaction)) {
@@ -435,7 +447,7 @@ if (validateTransactions(transactions)) {
   console.log('Failed to validate transactions. Block mining aborted.');
 }
 
-// Function to calculate Merkle Root
+// calculate Merkle Root
 function calculateMerkleRoot(transactions) {
     const transactionData = transactions.map(transaction => JSON.stringify(transaction)); // Serialize entire transaction object to JSON string
 
@@ -456,7 +468,7 @@ function calculateMerkleRoot(transactions) {
 }
 
 
-// Function to write data to output.txt
+// write data to output.txt
 function writeOutputToFile(data) {
     fs.writeFileSync('output.txt', data);
 }
