@@ -7,6 +7,7 @@ import binascii
 from coinbase import serialize_coinbase_transaction
 from utilities import reverse_bytes, hash256
 from transaction_serialization import serialize_transaction
+from txid_serialization_backup import serialize
 
 MEMPOOL_DIR = "mempool"
 OUTPUT_FILE = "output.txt"
@@ -31,7 +32,7 @@ def get_fee(transaction):
 def pre_process_transaction(transaction):
 
     global p2pkh, p2wpkh, p2sh
-    transaction["txid"] = reverse_bytes(hash256(serialize_transaction(transaction)))
+    transaction["txid"] = reverse_bytes(hash256(serialize(transaction)))
     transaction["weight"] = 1
     transaction["wtxid"] = reverse_bytes(hash256(serialize_transaction(transaction)))
     transaction["fee"] = transaction.get("fee", get_fee(transaction))
@@ -88,9 +89,6 @@ def target_to_bits(target):
 
 
 def mine_block(transactions):
-    """
-    Mine a block with the given transactions.
-    """
     nonce = 0
     txids = [tx["txid"] for tx in transactions]
 
@@ -235,7 +233,7 @@ def main():
     with open("valid-mempool.json", "r") as file:
         unverified_txns = json.load(file)
 
-    for tx in unverified_txns[200:2340]:
+    for tx in unverified_txns[200:2300]:
         verified_tx = pre_process_transaction(tx)
         transactions.append(verified_tx)
 
