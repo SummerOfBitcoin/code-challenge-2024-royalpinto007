@@ -233,7 +233,7 @@ def main():
     with open("valid-mempool.json", "r") as file:
         unverified_txns = json.load(file)
 
-    for tx in unverified_txns[200:2300]:
+    for tx in unverified_txns[200:1800]:
         verified_tx = pre_process_transaction(tx)
         transactions.append(verified_tx)
 
