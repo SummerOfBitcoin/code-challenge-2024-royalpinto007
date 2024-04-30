@@ -2,12 +2,14 @@ import json
 import os
 import hashlib
 import time
-import binascii
 
 from coinbase import serialize_coinbase_transaction
 from utilities import reverse_bytes, hash256
 from transaction_serialization import serialize_transaction
 from txid_serialization_backup import serialize
+from calculations import generate_merkle_root, hash256, calculate_total_weight_and_fee
+from witness import calculate_witness_commitment, verify_witness_commitment
+from header import validate_header
 
 MEMPOOL_DIR = "mempool"
 OUTPUT_FILE = "output.txt"
@@ -46,46 +48,6 @@ def read_transaction_file(filename):
 
     pre_process_transaction(transaction)
     return transaction
-
-
-def validate_transaction(transaction):
-    return True
-
-
-def validate_header(header, target_difficulty):
-    header_bytes = binascii.unhexlify(header)
-    if len(header_bytes) != 80:
-        raise ValueError("Invalid header length")
-
-    h1 = hashlib.sha256(header_bytes).digest()
-    h2 = hashlib.sha256(h1).digest()
-
-    reversed_hash = h2[::-1]
-
-    reversed_hash_int = int.from_bytes(reversed_hash, byteorder="big")
-    target_int = int(target_difficulty, 16)
-
-    if reversed_hash_int > target_int:
-        raise ValueError("Block does not meet target difficulty")
-
-
-def target_to_bits(target):
-    target_bytes = bytes.fromhex(target)
-
-    for i in range(len(target_bytes)):
-        if target_bytes[i] != 0:
-            break
-
-    exponent = len(target_bytes) - i
-
-    if len(target_bytes[i:]) >= 3:
-        coefficient = int.from_bytes(target_bytes[i : i + 3], byteorder="big")
-    else:
-        coefficient = int.from_bytes(target_bytes[i:], byteorder="big")
-
-    bits = (exponent << 24) | coefficient
-
-    return hex(bits)
 
 
 def mine_block(transactions):
@@ -136,70 +98,6 @@ def mine_block(transactions):
     validate_header(block_header_hex, DIFFICULTY_TARGET)
 
     return block_header_hex, txids, nonce, coinbase_hex, coinbase_txid
-
-
-def hash256(hex):
-    binary = bytes.fromhex(hex)
-    hash1 = hashlib.sha256(binary).digest()
-    hash2 = hashlib.sha256(hash1).digest()
-    result = hash2.hex()
-    return result
-
-
-def generate_merkle_root(txids):
-    if len(txids) == 0:
-        return None
-
-    level = [bytes.fromhex(txid)[::-1].hex() for txid in txids]
-
-    while len(level) > 1:
-        next_level = []
-        for i in range(0, len(level), 2):
-            if i + 1 == len(level):
-                pair_hash = hash256(level[i] + level[i])
-            else:
-                pair_hash = hash256(level[i] + level[i + 1])
-            next_level.append(pair_hash)
-        level = next_level
-    return level[0]
-
-
-def calculate_total_weight_and_fee(transactions):
-    total_weight = 0
-    total_fee = 0
-    for tx in transactions:
-        total_weight += tx["weight"]
-        total_fee += tx["fee"]
-
-    if total_weight > 4000000:
-        raise ValueError("Block exceeds maximum weight")
-
-    return total_weight, total_fee
-
-
-def calculate_witness_commitment(transactions):
-    wtxids = [WTXID_COINBASE]
-    for tx in transactions:
-        wtxids.append(tx["wtxid"])
-    witness_root = generate_merkle_root(wtxids)
-
-    witness_reserved_value_hex = WITNESS_RESERVED_VALUE_HEX
-
-    combined_data = witness_root + witness_reserved_value_hex
-
-    witness_commitment = hash256(combined_data)
-
-    return witness_commitment
-
-
-def verify_witness_commitment(coinbase_tx, witness_commitment):
-    for output in coinbase_tx["vout"]:
-        script_hex = output["scriptPubKey"]["hex"]
-        if script_hex.startswith("6a24aa21a9ed") and script_hex.endswith(
-            witness_commitment
-        ):
-            return True
-    return False
 
 
 def validate_block(coinbase_tx, txids, transactions):
