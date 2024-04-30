@@ -1,1 +1,5 @@
-# Update this file to run your own code
+# pip install coincurve
+# pip install hashlib
+
+python mine-block.py
+

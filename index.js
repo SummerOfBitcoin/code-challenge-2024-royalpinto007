@@ -254,7 +254,7 @@
 //     this.bits.writeUInt32LE(0x1d00ffff, 0); // difficulty target
 //     this.nonce = Buffer.alloc(4); // nonce 4 bytes
 //     this.nonce.writeUInt32LE(nonce, 0);
-//     this.difficultyTarget = 0x1d00ffff; 
+//     this.difficultyTarget = 0x1d00ffff;
 //   }
 
 //   serialize() {
@@ -402,7 +402,6 @@
 // // Mine the block with transactions
 // mineBlock(transactions);
 
-
 // // // Function to convert scriptPubKey hex to address
 // // function convertScriptPubKeyToAddress(scriptPubKeyHex) {
 // //  const publicKey = Buffer.from(scriptPubKeyHex, "hex");
@@ -448,14 +447,12 @@
 // //    return encoded;
 // //  }
 
-
 // // const transaction = {
 // //     scriptPubKeyHex: "6085312a9c500ff9cc35b571b0a1e5efb7fb9f16",
 // //     expectedAddress: "13VAhE9YkDwvMdRB85fm3y3xzLWq8ZcUfJ"
 // // };
 
 // // console.log(validateAddress(transaction));
-
 
 // //  // Generate base58 and bech32 addresses
 // //  const base58Address = generateBase58Address(publicKey);
