@@ -1,4 +1,3 @@
-from txid_serialization_backup import serialize
 from utilities import hash256, reverse_bytes
 from transaction_serialization import serialize_transaction
 

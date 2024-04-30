@@ -7,9 +7,9 @@ from coinbase import serialize_coinbase_transaction
 from utilities import reverse_bytes, hash256
 from transaction_serialization import serialize_transaction
 from txid_serialization_backup import serialize
-from calculations import generate_merkle_root, hash256, calculate_total_weight_and_fee
-from witness import calculate_witness_commitment, verify_witness_commitment
-from header import validate_header
+from block.calculations import generate_merkle_root, hash256, calculate_total_weight_and_fee
+from block.witness import calculate_witness_commitment, verify_witness_commitment
+from block.header import validate_header
 
 MEMPOOL_DIR = "mempool"
 OUTPUT_FILE = "output.txt"

@@ -1,5 +1,5 @@
 import hashlib
-from calculations import generate_merkle_root
+from block.calculations import generate_merkle_root
 from utilities import hash256
 
 WITNESS_RESERVED_VALUE_HEX = (
